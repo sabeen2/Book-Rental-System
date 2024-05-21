@@ -1,6 +1,6 @@
 # Book Rental System
 
-## Book Rental system Build using React, Typescript, Ant Design, Tailwind, Axios, Context API, React Query
+## Book Rental system Build using React, Typescript, Ant Design(AntD), Tailwind, Axios, Context API, React Query
 
 # To install and run
 
@@ -13,7 +13,7 @@ cd Book-Rental-System
 ```
 
 ```js
-npm i
+npm i 
 ```
 
 ```js
