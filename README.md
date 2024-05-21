@@ -2,7 +2,7 @@
 
 ## Book Rental system Build using React, Typescript, Ant Design, Tailwind CSS, Axios, Context API, React Query.
 
-# To install and run
+# To run it locally 
 
 ```js
 git clone https://github.com/sabeen2/Book-Rental-System
