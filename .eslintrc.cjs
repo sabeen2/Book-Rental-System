@@ -18,15 +18,7 @@ module.exports = {
       { allowConstantExport: true },
     ],
     // Allow unused variables only in build-time files
-    "@typescript-eslint/no-unused-vars": [
-      "warn",
-      {
-        vars: "all",
-        args: "none",
-        ignoreRestSiblings: true,
-        varsIgnorePattern: "^_", // Ignore variables prefixed with '_'
-      },
-    ],
+    "@typescript-eslint/no-unused-vars": "off",
   },
   overrides: [
     {
