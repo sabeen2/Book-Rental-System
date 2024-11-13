@@ -8,15 +8,13 @@ import {
   Popconfirm,
   Form,
   Input,
-  Upload,
   Modal,
 } from "antd";
 import type { TableProps } from "antd";
 import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
-import { InboxOutlined } from "@ant-design/icons";
+// import { InboxOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
-
-const { Dragger } = Upload;
+import mockCategories from "../../staticData/mockCategories.json";
 
 import CreateCategory from "./CreateCategory";
 
@@ -47,7 +45,22 @@ const CategorySetup: React.FC = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [form] = Form.useForm();
   const [inputForm] = Form.useForm();
-  const [uploadForm] = Form.useForm();
+  const [categoryData] = useState<CategoryDataType[]>(mockCategories);
+  const [filteredCategories, setFilteredCategories] =
+    useState<CategoryDataType[]>(mockCategories);
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.trim().toLowerCase();
+    setSearchText(value);
+
+    // Filter categories based on name or description
+    const filteredData = mockCategories.filter(
+      (category) =>
+        category.name.toLowerCase().includes(value) ||
+        category.discription.toLowerCase().includes(value)
+    );
+    setFilteredCategories(filteredData);
+  };
 
   const [searchedCategoryId, setSearchedCategoryId] = useState<
     CategoryDataType | any
@@ -147,8 +160,8 @@ const CategorySetup: React.FC = () => {
   };
 
   const {
-    data: categoryData,
-    isLoading: isLoadingCategoryData,
+    // data: ccategoryData,
+    // isLoading: isLoadingCategoryData,
     refetch: refetchCategory,
   } = useFetchCategory();
 
@@ -313,9 +326,9 @@ const CategorySetup: React.FC = () => {
             ? [findTheCategory]
             : findByName
             ? findByName
-            : categoryData
+            : mockCategories
         }
-        loading={isLoadingCategoryData}
+        // loading={isLoadingCategoryData}
         rowKey="id"
         pagination={{
           pageSize: 7,
@@ -350,36 +363,29 @@ const CategorySetup: React.FC = () => {
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <Form
-          form={uploadForm}
-          onFinish={onFinish}
-          className="flex flex-col justify-between h-full"
-        >
-          <Form.Item name="file" className="mb-4">
-            <Dragger name="file" {...props}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">
-                Click or drag file to this area to upload
-              </p>
-              <p className="ant-upload-hint">
-                Please note: Ensure that you only upload Excel files, and ensure
-                that your Excel file's columns are properly formatted. Thank
-                you.
-              </p>
-            </Dragger>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2  rounded-lg mt-2 mb-0  absolute left-52"
-              type="default"
-              htmlType="submit"
-            >
-              Upload
-            </Button>
+        <Form form={inputForm} className="flex items-center mb-0">
+          <Form.Item className="mr-2 w-50">
+            <Input
+              placeholder="Search by Name or Description"
+              value={searchText}
+              onChange={handleSearch}
+              className="border-2 border-blue-500 focus:border-blue-700 rounded-md outline-none font-extrabold"
+            />
           </Form.Item>
         </Form>
+
+        <Table
+          columns={columns}
+          dataSource={filteredCategories}
+          rowKey="id"
+          pagination={{
+            pageSize: 7,
+            responsive: true,
+            onChange(current) {
+              setPage(current);
+            },
+          }}
+        />
       </Modal>
     </div>
   );

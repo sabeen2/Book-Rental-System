@@ -1,0 +1,20 @@
+[
+  {
+    "authorId": "1",
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "mobileNumber": "1234567890"
+  },
+  {
+    "authorId": "2",
+    "name": "Jane Smith",
+    "email": "janesmith@example.com",
+    "mobileNumber": "9876543210"
+  },
+  {
+    "authorId": "3",
+    "name": "Samuel Johnson",
+    "email": "samuelj@example.com",
+    "mobileNumber": "4567891230"
+  }
+]

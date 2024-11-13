@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Space,
   Table,
@@ -8,25 +8,55 @@ import {
   Popconfirm,
   Form,
   Input,
-  Upload,
   Modal,
+  Upload,
 } from "antd";
 import type { TableProps } from "antd";
 import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { InboxOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
+import CreateMember from "./CreateMember";
 
 const { Dragger } = Upload;
 
-import CreateMember from "./CreateMember";
-
-import {
-  useFetchMember,
-  useDeleteMember,
-  useFindMemberById,
-  useDownloadMemberDetails,
-  useUploadMemberDetails,
-} from "../../api/members/queries";
+// Mock data for members
+const mockMembers = [
+  {
+    memberid: "1",
+    name: "John Doe",
+    email: "john@example.com",
+    mobileNo: "1234567890",
+    address: "123 Main St",
+  },
+  {
+    memberid: "2",
+    name: "Jane Smith",
+    email: "jane@example.com",
+    mobileNo: "0987654321",
+    address: "456 Elm St",
+  },
+  {
+    memberid: "3",
+    name: "Mike Johnson",
+    email: "mike@example.com",
+    mobileNo: "1122334455",
+    address: "789 Oak St",
+  },
+  {
+    memberid: "4",
+    name: "Sara White",
+    email: "sara@example.com",
+    mobileNo: "2233445566",
+    address: "101 Pine St",
+  },
+  {
+    memberid: "5",
+    name: "Paul Brown",
+    email: "paul@example.com",
+    mobileNo: "6677889900",
+    address: "202 Maple St",
+  },
+];
 
 interface MemberDataType {
   memberid: string;
@@ -38,23 +68,15 @@ interface MemberDataType {
 
 const MemberSetup: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<MemberDataType | any>(
+  const [selectedMember, setSelectedMember] = useState<MemberDataType | null>(
     null
   );
-  const [findTheMember, setFindTheMember] = useState<MemberDataType | any>(
-    null
-  );
-  const [findByName, setFindByName] = useState<MemberDataType | any>(null);
-  const [inputValueIsNumber, setInputValueIsNumber] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
-  const [form] = Form.useForm();
-  const [inputForm] = Form.useForm();
-  const [uploadForm] = Form.useForm();
-
-  const [searchedMemberId, setSearchedMemberId] = useState<
-    MemberDataType | any
-  >("");
-  const [page, setPage] = React.useState(1);
+  const [filteredMembers, setFilteredMembers] =
+    useState<MemberDataType[]>(mockMembers);
+  const [page, setPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [fileList, setFileList] = useState<any[]>([]);
 
   const columns: TableProps<MemberDataType>["columns"] = [
     {
@@ -62,37 +84,14 @@ const MemberSetup: React.FC = () => {
       dataIndex: "index",
       key: "index",
       render: (_, __, index) => (page - 1) * 7 + index + 1,
-      sorter: (a, b) => {
-        const numA = parseInt(a.memberid, 10);
-        const numB = parseInt(b.memberid, 10);
-        return numA - numB;
-      },
+      sorter: (a, b) => parseInt(a.memberid, 10) - parseInt(b.memberid, 10),
       sortDirections: ["descend"],
       defaultSortOrder: "ascend",
     },
-
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text) => <a>{text}</a>,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Mobile",
-      dataIndex: "mobileNo",
-      key: "mobileNo",
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
-    },
-
+    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Mobile", dataIndex: "mobileNo", key: "mobileNo" },
+    { title: "Address", dataIndex: "address", key: "address" },
     {
       title: "Action",
       key: "action",
@@ -103,7 +102,6 @@ const MemberSetup: React.FC = () => {
             title="Are you sure to delete this member?"
             onConfirm={() => handleDelete(record.memberid)}
             okText="Yes"
-            okButtonProps={{ danger: true }}
             cancelText="No"
           >
             <Button danger>Delete</Button>
@@ -114,94 +112,54 @@ const MemberSetup: React.FC = () => {
   ];
 
   const showEditDrawer = (member: MemberDataType) => {
-    form.setFieldsValue(member);
     setSelectedMember(member);
     setOpen(true);
   };
 
-  const showDrawer = () => {
-    setOpen(true);
-  };
-
   const onClose = () => {
-    form.resetFields();
     setOpen(false);
-    refetchMember();
     setSelectedMember(null);
-    setSearchedMemberId(searchedMemberId);
   };
 
-  const { mutate: deleteThisMember } = useDeleteMember();
+  const handleDelete = (memberID: string) => {
+    setFilteredMembers(
+      filteredMembers.filter((member) => member.memberid !== memberID)
+    );
+    message.success("Deleted member successfully.");
+  };
 
-  const handleDelete = (memberID: any) => {
-    deleteThisMember(memberID, {
-      onSuccess: (data) => {
-        message.success(`Deleted member Successfully ${data}`);
-        setFindTheMember(null);
-        refetchMember();
-      },
-    });
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.toLowerCase();
+    setSearchText(value);
+
+    if (value === "") {
+      setFilteredMembers(mockMembers);
+    } else {
+      const filtered = mockMembers.filter((member) =>
+        Object.values(member).some((field) =>
+          String(field).toLowerCase().includes(value)
+        )
+      );
+      setFilteredMembers(filtered);
+    }
   };
 
   const handleDownloadMemberDetails = () => {
-    downloadMembers(undefined, {
-      onSuccess: (data) => {
-        const blob = new Blob([data], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(blob);
-        link.download = "member_details.xlsx";
-        link.click();
-      },
-      onError: (data) => {
-        message.error(`Failed to Download: ${data}`);
-      },
+    const dataToDownload = filteredMembers.map((member) => ({
+      Name: member.name,
+      Email: member.email,
+      Mobile: member.mobileNo,
+      Address: member.address,
+    }));
+
+    const blob = new Blob([JSON.stringify(dataToDownload)], {
+      type: "application/json",
     });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "members.json";
+    link.click();
   };
-
-  const {
-    data: memberData,
-    isLoading: isLoadingMemberData,
-    refetch: refetchMember,
-  } = useFetchMember();
-
-  const { mutate: downloadMembers } = useDownloadMemberDetails();
-
-  const { data: findMember, refetch: refetchFindMember } =
-    useFindMemberById(searchedMemberId);
-
-  const searchById = (values: any) => {
-    setSearchedMemberId(values.memberId.trim());
-  };
-
-  const handleNameChange = (event: any) => {
-    if (event.target.value === "") {
-      setFindTheMember(null);
-      setSearchedMemberId("");
-      setInputValueIsNumber(false);
-    } else if (!isNaN(event.target.value)) {
-      setInputValueIsNumber(true);
-    }
-    setSearchText(event.target.value.trim());
-  };
-
-  useEffect(() => {
-    const searchedMembers = memberData?.filter((member: MemberDataType) => {
-      return Object.values(member).some((value) =>
-        String(value).toLowerCase().includes(searchText.toLowerCase())
-      );
-    });
-    setFindByName(searchedMembers);
-  }, [searchText, memberData]);
-
-  useEffect(() => {
-    if (searchedMemberId) {
-      setFindTheMember(findMember);
-    }
-  }, [searchedMemberId, refetchFindMember, findMember]);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -214,14 +172,11 @@ const MemberSetup: React.FC = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  const [fileList, setFileList] = useState<any[]>([]);
-  const { mutate: uploadMember } = useUploadMemberDetails();
 
-  const props: UploadProps = {
+  const uploadProps: UploadProps = {
     name: "file",
     fileList: fileList,
-    action: "",
-    beforeUpload: (file: File) => {
+    beforeUpload: (file) => {
       const isExcel =
         file.type === "application/vnd.ms-excel" ||
         file.type ===
@@ -231,28 +186,11 @@ const MemberSetup: React.FC = () => {
         return false;
       }
       setFileList([file]);
-      onFinish(file);
       return false;
     },
     onRemove: () => {
       setFileList([]);
     },
-  };
-
-  const onFinish = (e: any) => {
-    let payload = {
-      file: e.file.file,
-    };
-    uploadMember(payload, {
-      onSuccess: () => {
-        message.success("Sucessfully uploaded");
-        setIsModalOpen(false);
-        refetchMember();
-      },
-      onError: (data) => {
-        message.error(`Failed ${data}`);
-      },
-    });
   };
 
   return (
@@ -262,79 +200,47 @@ const MemberSetup: React.FC = () => {
         <Button
           className="bg-white text-black font-bold py-1 px-4 rounded-full transform hover:scale-105 hover:shadow-md"
           type="default"
-          onClick={showDrawer}
+          onClick={() => setOpen(true)}
         >
           Create
         </Button>
         <Drawer
-          className="flex"
           width={800}
           autoFocus
           title={selectedMember ? "Edit Member" : "Create Member"}
           onClose={onClose}
           open={open}
         >
-          <div className="flex-auto">
-            <CreateMember
-              selectedMember={selectedMember}
-              form={form}
-              onSucess={onClose}
-            />
-          </div>
+          <CreateMember
+            form={undefined as any}
+            onSucess={function (): void {
+              throw new Error("Function not implemented.");
+            }}
+          />
         </Drawer>
       </div>
-      <div className=" flex flex-wrap items-center">
-        <Form
-          form={inputForm}
-          onFinish={searchById}
-          className="flex items-center mb-0"
-        >
-          <Form.Item name="memberId" className="mr-2 w-50">
-            <Input
-              placeholder="Search"
-              value={
-                searchedMemberId
-                  ? searchedMemberId
-                  : searchText
-                  ? searchText
-                  : ""
-              }
-              onChange={handleNameChange}
-              className="border-2 border-blue-500 focus:border-blue-700 rounded-md  outline-none font-extrabold"
-            />
-          </Form.Item>
 
-          {inputValueIsNumber && (
-            <Form.Item className="">
-              <Button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2  rounded-lg"
-                type="default"
-                htmlType="submit"
-              >
-                Search By Id ??
-              </Button>
-            </Form.Item>
-          )}
-        </Form>
+      <div className="flex items-center mb-4 w-56">
+        <Input
+          placeholder="Search members..."
+          value={searchText}
+          onChange={handleSearch}
+          className="border-2 border-blue-500 focus:border-blue-700 rounded-md outline-none font-extrabold"
+        />
       </div>
+
       <Table
         columns={columns}
-        dataSource={
-          findTheMember ? [findTheMember] : findByName ? findByName : memberData
-        }
-        loading={isLoadingMemberData}
+        dataSource={filteredMembers}
         rowKey="memberid"
         pagination={{
           pageSize: 7,
-          responsive: true,
-          onChange(current) {
-            setPage(current);
-          },
+          onChange: (current) => setPage(current),
         }}
       />
 
       <Button
-        className=" mb-4  bg-green-500 hover:bg-green-700 text-white font-bold px-2 rounded"
+        className="mb-4 bg-green-500 hover:bg-green-700 text-white font-bold px-2 rounded"
         type="default"
         onClick={handleDownloadMemberDetails}
         icon={<DownloadOutlined />}
@@ -343,11 +249,11 @@ const MemberSetup: React.FC = () => {
       </Button>
 
       <Button
-        className="ml-4 bg-blue-500  text-white font-bold px-2 rounded"
+        className="ml-4 bg-blue-500 text-white font-bold px-2 rounded"
         icon={<UploadOutlined />}
         onClick={showModal}
       >
-        Upload Member Data in Excel
+        Upload Member Data
       </Button>
 
       <Modal
@@ -358,33 +264,18 @@ const MemberSetup: React.FC = () => {
         onCancel={handleCancel}
       >
         <Form
-          form={uploadForm}
-          onFinish={onFinish}
+          onFinish={() => {}}
           className="flex flex-col justify-between h-full"
         >
           <Form.Item name="file" className="mb-4">
-            <Dragger name="file" {...props}>
+            <Dragger name="file" {...uploadProps}>
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>
               <p className="ant-upload-text">
                 Click or drag file to this area to upload
               </p>
-              <p className="ant-upload-hint">
-                Please note: Ensure that you only upload Excel files, and ensure
-                that your Excel file's columns are properly formatted. Thank
-                you.
-              </p>
             </Dragger>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-2  rounded-lg mt-2 mb-0  absolute left-52"
-              type="default"
-              htmlType="submit"
-            >
-              Upload
-            </Button>
           </Form.Item>
         </Form>
       </Modal>

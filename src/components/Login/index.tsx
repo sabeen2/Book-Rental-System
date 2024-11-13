@@ -5,6 +5,9 @@ import { useAuth } from "../../providers/AuthContext";
 
 const LoginForm: React.FC = () => {
   const { loggedIn, login, isLoggingUser } = useAuth();
+  const [form] = Form.useForm();
+  const adminEmail = "sabin@yopmail.com";
+  const adminPassword = "1234";
 
   const navigate = useNavigate();
 
@@ -18,20 +21,27 @@ const LoginForm: React.FC = () => {
     }
   }, [loggedIn, navigate]);
 
+  const fillAdminCredentials = () => {
+    form.setFieldsValue({
+      username: adminEmail,
+      password: adminPassword,
+    });
+  };
+
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="w-96 bg-white rounded-lg p-8 flex flex-col justify-between shadow-md">
-        <div className=" text-center mb-6 text-gray-800 font-bold">
-          {" "}
-          Use this cred to login <br />{" "}
-          <div className="border border-gray-600 rounded p-2 h-14 w-44 mx-20">
-            sabin@yopmail.com <br /> 1234
-          </div>
-        </div>
         <h1 className="text-3xl text-center mb-6 text-gray-800 font-bold">
           Login
         </h1>
+        <Button
+          onClick={fillAdminCredentials}
+          className="mb-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-700 hover:to-blue-900 text-white font-bold px-4 rounded-md focus:outline-none transition-all duration-300"
+        >
+          Use Admin Credentials
+        </Button>
         <Form
+          form={form}
           name="basic"
           initialValues={{ remember: true }}
           onFinish={onFinish}
@@ -42,7 +52,7 @@ const LoginForm: React.FC = () => {
             rules={[{ required: true, message: "Please input your username!" }]}
           >
             <Input
-              placeholder="Enter Username"
+              placeholder="Enter Email"
               className="border-gray-900 rounded-md mb-4 border focus:outline-none focus:border-purple-500 px-3 py-2"
             />
           </Form.Item>
@@ -57,7 +67,7 @@ const LoginForm: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item >
+          <Form.Item>
             <Button
               loading={isLoggingUser}
               type="primary"

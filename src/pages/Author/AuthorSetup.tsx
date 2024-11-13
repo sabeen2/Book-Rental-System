@@ -15,6 +15,7 @@ import type { TableProps } from "antd";
 import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { InboxOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
+import mockAuthors from "../../staticData/mockAuthors.json";
 
 const { Dragger } = Upload;
 
@@ -40,20 +41,32 @@ const AuthorSetup: React.FC = () => {
   const [selectedAuthor, setSelectedAuthor] = useState<AuthorDataType | any>(
     null
   );
-  const [findTheAuthor, setFindTheAuthor] = useState<AuthorDataType | any>(
-    null
-  );
-  const [findByName, setFindByName] = useState<AuthorDataType | any>(null);
+
   const [inputValueIsNumber, setInputValueIsNumber] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [form] = Form.useForm();
   const [inputForm] = Form.useForm();
   const [uploadForm] = Form.useForm();
+  const [finalAuthorData, setfinalAuthorData] =
+    useState<AuthorDataType[]>(mockAuthors);
+  const [findByName, setFindByName] = useState<AuthorDataType[] | null>(null);
+  const [findTheAuthor, setFindTheAuthor] = useState<AuthorDataType | null>(
+    null
+  );
+
+  const { data: authorData, isLoading: isLoadingAuthorData } = useFetchAuthor();
 
   const [searchedAuthorId, setSearchedAuthorId] = useState<
     AuthorDataType | any
   >("");
   const [page, setPage] = React.useState(1);
+
+  useEffect(() => {
+    if (authorData?.length === 0 || !authorData) {
+      setfinalAuthorData(mockAuthors);
+    } else {
+    }
+  }, [authorData]);
 
   const columns: TableProps<AuthorDataType>["columns"] = [
     {
@@ -121,7 +134,6 @@ const AuthorSetup: React.FC = () => {
   const onClose = () => {
     form.resetFields();
     setOpen(false);
-    refetchAuthor();
     setSelectedAuthor(null);
     setSearchedAuthorId(searchedAuthorId);
   };
@@ -133,7 +145,6 @@ const AuthorSetup: React.FC = () => {
       onSuccess: (data) => {
         message.success(`Deleted author Successfully ${data}`);
         setFindTheAuthor(null);
-        refetchAuthor();
       },
     });
   };
@@ -155,12 +166,6 @@ const AuthorSetup: React.FC = () => {
     });
   };
 
-  const {
-    data: authorData,
-    isLoading: isLoadingAuthorData,
-    refetch: refetchAuthor,
-  } = useFetchAuthor();
-
   const { mutate: downloadAuthors } = useDownloadAuthorDetails();
 
   const {
@@ -173,15 +178,22 @@ const AuthorSetup: React.FC = () => {
     setSearchedAuthorId(values.authorId.trim());
   };
 
-  const handleNameChange = (event: any) => {
-    if (event.target.value === "") {
-      setFindTheAuthor(null);
-      setSearchedAuthorId("");
-      setInputValueIsNumber(false);
-    } else if (!isNaN(event.target.value)) {
-      setInputValueIsNumber(true);
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.trim().toLowerCase();
+    setSearchText(value);
+
+    if (value === "") {
+      // Reset to original data if search is cleared
+      setfinalAuthorData(mockAuthors);
+    } else {
+      // Filter authors based on search text
+      const filteredAuthors = mockAuthors.filter((author: AuthorDataType) =>
+        Object.values(author).some((field) =>
+          String(field).toLowerCase().includes(value)
+        )
+      );
+      setfinalAuthorData(filteredAuthors);
     }
-    setSearchText(event.target.value.trim());
   };
 
   useEffect(() => {
@@ -251,7 +263,6 @@ const AuthorSetup: React.FC = () => {
       onSuccess: () => {
         message.success("Sucessfully uploaded");
         setIsModalOpen(false);
-        refetchAuthor();
       },
       onError: (data) => {
         message.error(`Failed ${data}`);
@@ -323,10 +334,7 @@ const AuthorSetup: React.FC = () => {
       </div>
       <Table
         columns={columns}
-        dataSource={
-          findTheAuthor ? [findTheAuthor] : findByName ? findByName : authorData
-        }
-        loading={isLoadingAuthorData}
+        dataSource={finalAuthorData}
         rowKey="authorId"
         pagination={{
           pageSize: 7,

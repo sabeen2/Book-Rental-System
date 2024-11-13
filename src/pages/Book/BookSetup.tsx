@@ -26,6 +26,41 @@ import {
 } from "../../api/book/queries";
 import ImageCard from "./ImageCard";
 
+const mockBooks: BookDataType[] = [
+  {
+    id: "1",
+    name: "Summer Love",
+    rating: 4,
+    stock: 10,
+    publishedDate: "2023-01-01",
+    file: null,
+    isbn: "123456789",
+    pages: 200,
+    categoryId: "1",
+    authorId: "1",
+    photo: null,
+    authorName: "Bibek shah",
+    hasImage: false,
+    authorDetails: [{ name: "Bibek shah" }],
+  },
+  {
+    id: "2",
+    name: "3 am club",
+    rating: 3,
+    stock: 5,
+    publishedDate: "2022-05-12",
+    file: null,
+    isbn: "987654321",
+    pages: 300,
+    categoryId: "2",
+    authorId: "2",
+    photo: null,
+    authorName: "Robnert C. Martin",
+    hasImage: true,
+    authorDetails: [{ name: " Robnert C. Martin" }],
+  },
+  // Add more mock books here...
+];
 interface BookDataType {
   id: string;
   name: string;
@@ -53,6 +88,7 @@ const BookSetup: React.FC = () => {
   const [form] = Form.useForm();
   const [inputForm] = Form.useForm();
   const [uploadForm] = Form.useForm();
+  const [filteredBook, setfilteredBook] = useState(mockBooks);
 
   const [searchedBookId, setSearchedBookId] = useState<BookDataType | any>("");
   const [page, setPage] = React.useState(1);
@@ -221,13 +257,13 @@ const BookSetup: React.FC = () => {
   };
 
   useEffect(() => {
-    const searchedBooks = bookData?.filter((book: BookDataType) => {
+    const searchedBooks = filteredBook?.filter((book: BookDataType) => {
       return Object.values(book).some((value) =>
         String(value).toLowerCase().includes(searchText.toLowerCase())
       );
     });
     setFindByName(searchedBooks);
-  }, [searchText, bookData]);
+  }, [searchText, filteredBook]);
 
   useEffect(() => {
     if (searchedBookId) {
@@ -323,9 +359,9 @@ const BookSetup: React.FC = () => {
       <Table
         columns={columns}
         dataSource={
-          findTheBook ? [findTheBook] : findByName ? findByName : bookData
+          findTheBook ? [findTheBook] : findByName ? findByName : mockBooks
         }
-        loading={isLoadingBookData}
+        // loading={isLoadingBookData}
         rowKey="bookId"
         pagination={{
           pageSize: 7,

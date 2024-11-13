@@ -40,6 +40,40 @@ interface TransactionDataType {
 }
 
 const TransactionSetup: React.FC = () => {
+  const mockData: TransactionDataType[] = [
+    {
+      id: 1,
+      bookName: "The Great Gatsby",
+      code: "A123",
+      fromDate: "2024-01-01",
+      toDate: "2024-02-01",
+      transactionType: "Rent",
+      memberName: "John Doe",
+    },
+    {
+      id: 2,
+      bookName: "Moby Dick",
+      code: "B456",
+      fromDate: "2024-01-10",
+      toDate: "2024-02-10",
+      transactionType: "Rent",
+      memberName: "Jane Smith",
+    },
+    {
+      id: 3,
+      bookName: "To Kill a Mockingbird",
+      code: "C789",
+      fromDate: "2024-02-01",
+      toDate: "2024-03-01",
+      transactionType: "Rent",
+      memberName: "Alice Johnson",
+    },
+    // Add more static entries as needed
+  ];
+
+  const [transactionData, setTransactionData] =
+    useState<TransactionDataType[]>(mockData);
+
   const [open, setOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<
     TransactionDataType | any
@@ -189,9 +223,19 @@ const TransactionSetup: React.FC = () => {
       },
     });
   };
+  useEffect(() => {
+    const searchedTransactions = mockData.filter(
+      (transaction: TransactionDataType) => {
+        return Object.values(transaction).some((value) =>
+          String(value).toLowerCase().includes(searchText.toLowerCase())
+        );
+      }
+    );
+    setFindByName(searchedTransactions);
+  }, [searchText]);
 
   const {
-    data: transactionData,
+    data: atransactionData,
     isLoading: isLoadingTransactionData,
     refetch: refetchTransaction,
   } = useFetchTransaction();
@@ -354,14 +398,7 @@ const TransactionSetup: React.FC = () => {
       </div>
       <Table
         columns={columns}
-        dataSource={
-          findTheTransaction
-            ? [findTheTransaction]
-            : findByName
-            ? findByName
-            : transactionData
-        }
-        loading={isLoadingTransactionData}
+        dataSource={findByName?.length > 0 ? findByName : transactionData}
         rowKey="id"
         pagination={{
           pageSize: 7,

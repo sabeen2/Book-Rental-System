@@ -108,7 +108,8 @@ const Dashboard: React.FC = () => {
               {" "}
               <UserOutlined className="text-xl text-yellow-500" />{" "}
               <span className="ml-2 mr-4 text-sm">
-                {currentUser} ({currentRole})
+                {/* {currentUser} ({currentRole}) */}
+                {`Sabin`} ({`admin`})
               </span>
             </div>
 
