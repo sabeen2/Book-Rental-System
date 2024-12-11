@@ -8,43 +8,67 @@ import {
   FieldTimeOutlined,
 } from "@ant-design/icons";
 import { Bar } from "@ant-design/charts";
-import { useFetchTransaction } from "../api/transaction/queries";
-import { useFetchMember } from "../api/members/queries";
-import { useFetchAuthor } from "../api/author/queries";
-import { useFetchCategory } from "../api/category/queries";
-import { useFetchBook } from "../api/book/queries";
 
 const Charts: React.FC = () => {
-  const { data: memberData } = useFetchMember();
-  const { data: authorData } = useFetchAuthor();
-  const { data: categoryData } = useFetchCategory();
-  const { data: bookData } = useFetchBook();
-  const { data: transactionData } = useFetchTransaction();
+  // Hardcoded example data
+  const totalMembers = 5;
+  const totalAuthors = 3;
+  const totalCategories = 5;
+  const totalBooks = 2;
 
-  const totalMembers = memberData?.length || 0;
-  const totalAuthors = authorData?.length || 0;
-  const totalCategories = categoryData?.length || 0;
-  const totalBooks = bookData?.length || 0;
+  // Example transaction data
+  const transactionData = [
+    {
+      bookName: "To Kill a Mockingbird",
+      fromDate: "2023-01-15",
+      toDate: "2023-02-15",
+    },
+    { bookName: "1984", fromDate: "2023-02-01", toDate: "2023-03-01" },
+    {
+      bookName: "Pride and Prejudice",
+      fromDate: "2023-01-20",
+      toDate: "2023-02-20",
+    },
+    {
+      bookName: "The Great Gatsby",
+      fromDate: "2023-03-10",
+      toDate: "2023-04-10",
+    },
+    { bookName: "Moby Dick", fromDate: "2023-02-15", toDate: "2023-03-15" },
+    {
+      bookName: "To Kill a Mockingbird",
+      fromDate: "2023-03-01",
+      toDate: "2023-04-01",
+    },
+    { bookName: "1984", fromDate: "2023-04-05", toDate: "2023-05-05" },
+    {
+      bookName: "Pride and Prejudice",
+      fromDate: "2023-02-10",
+      toDate: "2023-03-10",
+    },
+    {
+      bookName: "The Great Gatsby",
+      fromDate: "2023-01-25",
+      toDate: "2023-02-25",
+    },
+    { bookName: "Moby Dick", fromDate: "2023-03-20", toDate: "2023-04-20" },
+  ];
 
   let bookFrequency: { [key: string]: number } = {};
   let totalRentDuration = 0;
   let totalTransactions = 0;
 
-  if (transactionData && Array.isArray(transactionData)) {
-    transactionData.forEach(
-      (transaction: { bookName: any; fromDate: any; toDate: any }) => {
-        const { bookName, fromDate, toDate } = transaction;
-        const rentDuration =
-          new Date(toDate).getTime() - new Date(fromDate).getTime();
+  transactionData.forEach((transaction) => {
+    const { bookName, fromDate, toDate } = transaction;
+    const rentDuration =
+      new Date(toDate).getTime() - new Date(fromDate).getTime();
 
-        if (!isNaN(rentDuration)) {
-          bookFrequency[bookName] = (bookFrequency[bookName] || 0) + 1;
-          totalRentDuration += rentDuration;
-          totalTransactions++;
-        }
-      }
-    );
-  }
+    if (!isNaN(rentDuration)) {
+      bookFrequency[bookName] = (bookFrequency[bookName] || 0) + 1;
+      totalRentDuration += rentDuration;
+      totalTransactions++;
+    }
+  });
 
   const transactionStats = Object.keys(bookFrequency).map((book) => ({
     bookName: book,
@@ -61,9 +85,9 @@ const Charts: React.FC = () => {
       ? Math.ceil(totalRentDuration / (totalTransactions * millisecondsInADay))
       : 0;
 
-  const barData = topBooks.map((book) => ({
+  const barData = topBooks.map((book, index) => ({
     bookName: book.bookName,
-    frequency: book.frequency,
+    frequency: book.frequency + index,
   }));
 
   const barConfig = {

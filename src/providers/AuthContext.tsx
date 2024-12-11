@@ -15,7 +15,7 @@ interface AuthContextProps {
   loggedIn: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
-  isLoggingUser: boolean;
+  isLoggingUser?: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -35,48 +35,62 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   //   }
   // }, [loggedIn]);
 
-  const { mutate: loginUser, isLoading: isLoggingUser } = useLogin();
+  // const { mutate: loginUser, isLoading: isLoggingUser } = useLogin();
 
-  const login: any = (
-    username: LoginRequest,
-    password: MutateOptions<any, unknown, LoginRequest, unknown> | undefined
-  ) => {
-    loginUser(
-      { username, password },
-      {
-        onSuccess: () => {
-          // const { accessToken, refreshToken } = data;
-          localStorage.setItem(
-            "bookRental",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-          );
-          localStorage.setItem(
-            "refreshToken",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-          );
+  // const login: any = (
+  //   username: LoginRequest,
+  //   password: MutateOptions<any, unknown, LoginRequest, unknown> | undefined
+  // ) => {
+  //   loginUser(
+  //     { username, password },
+  //     {
+  //       onSuccess: () => {
+  //         // const { accessToken, refreshToken } = data;
+  //         localStorage.setItem(
+  //           "bookRental",
+  //           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+  //         );
+  //         localStorage.setItem(
+  //           "refreshToken",
+  //           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+  //         );
 
-          setLoggedIn(true);
-          message.success(`Login Sucessfull`);
-        },
-        onError: () => {
-          setLoggedIn(true);
-          localStorage.setItem(
-            "bookRental",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-          );
-          localStorage.setItem(
-            "refreshToken",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-          );
-          // message.error(`Login Failed ${errorMsg}`);
-        },
-      }
-    );
-  };
+  //         setLoggedIn(true);
+  //         message.success(`Login Sucessfull`);
+  //       },
+  //       onError: () => {
+  //         setLoggedIn(true);
+  //         localStorage.setItem(
+  //           "bookRental",
+  //           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+  //         );
+  //         localStorage.setItem(
+  //           "refreshToken",
+  //           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+  //         );
+  //         // message.error(`Login Failed ${errorMsg}`);
+  //       },
+  //     }
+  //   );
+  // };
 
   // var islogging = null;
 
   // isLoggingUser ? islogging : !islogging;
+
+  const login: any = () => {
+    localStorage.setItem(
+      "bookRental",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    );
+    localStorage.setItem(
+      "refreshToken",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+    );
+
+    setLoggedIn(true);
+    message.success(`Login Sucessfull`);
+  };
 
   const logout = () => {
     localStorage.removeItem("bookRental");
@@ -87,7 +101,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ loggedIn, login, logout, isLoggingUser }}>
+    <AuthContext.Provider value={{ loggedIn, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
